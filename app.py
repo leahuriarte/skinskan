@@ -9,14 +9,14 @@ from fastai import learner
 from fastai.vision.all import *
 import PIL
 import torchvision.transforms as T
+import requests
 
 cwd = os.getcwd()
 path= cwd
 
 app = Flask(__name__)
 
-model = load_learner ("cancer.pkl", cpu=True, pickle_module=pickle)
-model2 = load_learner ("burn2.pkl", cpu=True, pickle_module=pickle)
+model = load_learner("all.pkl", cpu=True, pickle_module=pickle)
 
 @app.route('/')
 def form():
@@ -25,20 +25,15 @@ def form():
 @app.route('/upload', methods=["POST"])
 def upload():
     if request.method == 'POST':
-        form.data = request.files
-        cancer_input = form.data['cancer']
-        if cancer_input.filename != '':
-            img_fastai = PILImage.create(cancer_input)
-            print(cancer_input)
-            print(img_fastai)
-            prediction = model.predict(img_fastai)[0]
-        else:
-            return render_template('index.html')
+        file = request.files['image'].read()
+        open('facebook.jpg', 'wb').write(file)
+        #else:
+            #return render_template('index.html')
 
         # Resizing img to 224 X 224 , This is the size on which model was trained
         #img_fastai = PILImage.create(cancer_input)
         # Prediction using model
-        #prediction = model.predict(img_fastai)[0]
+        prediction = model.predict("/Users/Leah/wound/facebook.jpg")[0]
         rec = ""
         rec2 = ""
         rec3 = ""
@@ -46,10 +41,7 @@ def upload():
         rec5 = ""
         sources = "static/img/"
 
-        if prediction == null:
-            rec = "Oops! You forgot to upload a valid file :("
-            sources += "hero-img.png"
-        elif prediction == "actinic keratosis":
+        if prediction == "actinic keratosis":
             rec = """Actinic keratosis is a precancerous skin condition that is caused by long-term sun exposure. 
             It is characterized by rough, scaly patches or bumps that develop on sun-exposed areas of the skin, 
             such as the face, scalp, ears, neck, arms, and hands. Actinic keratosis is also known as solar keratosis, 
@@ -173,35 +165,28 @@ def upload():
             detect any changes in the skin and allow for early intervention if necessary."""
             sources += "vascular-lesion.png"
         elif prediction == "first":
-            rec = "first"
-
+            prediction = "a first degree burn"
+            rec = "A first degree burn is a minor burn that affects only the outermost layer of the skin. These burns are often caused by brief exposure to heat, such as touching a hot surface, or exposure to the sun."
+            rec2 = "The symptoms of a first degree burn include redness, pain, and mild swelling. The affected area may also be tender to the touch. In most cases, first degree burns can be treated at home with simple first aid measures."
+            rec3 = "If you have a first degree burn, the first step is to cool the affected area with cool water or a cool compress. You can also apply aloe vera or a moisturizing lotion to the burn to help soothe the skin. Over-the-counter pain relievers, such as ibuprofen or acetaminophen, can help relieve pain and reduce swelling."
+            rec4 = "It is important to keep the burned area clean and dry to prevent infection. Avoid using any products that may irritate the skin, such as perfumes or harsh soaps. If the burn is on a particularly sensitive area, such as the face or genitals, or if the burn covers a large area of the body, seek medical attention."
+            rec5 = "To prevent first degree burns, be cautious when working with hot objects or around fire, and protect your skin from the sun with clothing and sunscreen."
+            sources += "first.png"
+        elif prediction == "second":
+            prediction = "a second degree burn"
+            rec = "A second degree burn is a burn that affects both the outermost layer of skin (the epidermis) and the layer beneath it (the dermis). These burns are often caused by exposure to flames, hot liquids, or prolonged exposure to the sun."
+            rec2 = "The symptoms of a second degree burn include redness, blistering, and severe pain. The affected area may also be swollen and appear wet or shiny. Second degree burns can be more serious than first degree burns and may require medical attention."
+            rec3 = "If you have a second degree burn, the first step is to cool the affected area with cool water or a cool compress for at least 10-15 minutes. Do not apply ice or butter, as this can worsen the burn. You can also apply a sterile gauze bandage to the burn to protect it and keep it clean."
+            rec4 = "Over-the-counter pain relievers, such as ibuprofen or acetaminophen, can help relieve pain and reduce swelling. If the burn is on a particularly sensitive area, such as the face, hands, feet, or genitals, or if the burn covers a large area of the body, seek medical attention."
+            rec5 = "Medical treatment for second degree burns may include cleaning the burn, applying a topical antibiotic ointment or cream, and possibly taking oral antibiotics to prevent infection. In some cases, a tetanus shot may also be recommended. More severe burns may require hospitalization and additional treatment, such as wound care, skin grafting, or surgery."
+            sources += "second.png"
+        elif prediction == "third":
+            prediction = "a third degree burn"
+            rec = "A third degree burn is a severe burn that affects all layers of the skin, as well as the underlying tissue. These burns are often caused by exposure to flames, chemicals, electricity, or prolonged exposure to hot liquids or objects."
+            rec2 = "The symptoms of a third degree burn include white or blackened skin, a dry and leathery texture, and severe pain or numbness. Third degree burns are a medical emergency and require IMMEDIATE medical attention."
+            rec3 = "If you or someone else has a third degree burn, call for emergency medical services immediately. Do NOT attempt to cool the affected area or apply any ointments or creams. Cover the burn with a clean, dry cloth or sterile bandage to prevent infection."
+            rec4 = "Medical treatment for third degree burns may include fluid resuscitation to replace fluids lost due to the burn, pain management, and wound care. Depending on the severity of the burn, skin grafting or other surgical procedures may be necessary to promote healing and prevent complications."
+            rec5 = "To prevent third degree burns, take precautions when working with hot objects, chemicals, or electricity. Wear protective clothing and follow safety guidelines when working with these materials. In case of a fire, evacuate the area immediately and call for emergency services."
+            sources += "third.png"
         return render_template('results.html', prediction = prediction, sources = sources, rec = rec, rec2 = rec2, rec3 = rec3, rec4 = rec4, rec5 = rec5)
 
-@app.route('/burn', methods=["POST"])
-def burn():
-    if request.method == 'POST':
-        file = request.files['burn'].read()
-        # Resizing img to 224 X 224 , This is the size on which model was trained
-        img = load_image(io.BytesIO(file))
-        img = PILImage.create(img)
-        # Prediction using model
-        prediction = model2.predict(img)[0]
-
-        # Resizing img to 224 X 224 , This is the size on which model was trained
-        #img_fastai = PILImage.create(cancer_input)
-        # Prediction using model
-        #prediction = model.predict(img_fastai)[0]
-        rec = ""
-        rec2 = ""
-        rec3 = ""
-        rec4 = ""
-        rec5 = ""
-        sources = "static/img/"
-
-        if prediction == null:
-            rec = "Oops! You forgot to upload a valid file :("
-            sources += "hero-img.png"
-        elif prediction == "first":
-            rec = "first"
-
-        return render_template('results.html', prediction = prediction, sources = sources, rec = rec, rec2 = rec2, rec3 = rec3, rec4 = rec4, rec5 = rec5)
